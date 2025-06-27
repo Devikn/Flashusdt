@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flash USDT dApp</title>
+  <link rel="icon" href="favicon.ico" />
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2rem; }
+    input, button { padding: 10px; margin: 5px 0; font-size: 1rem; width: 100%; }
+  </style>
+</head>
+<body>
+  <h1>Flash USDT dApp</h1>
+
+  <button id="connect">Connect Wallet</button>
+  <p id="wallet">Wallet: Not connected</p>
+  <p id="balance">USDT Balance: --</p>
+
+  <h3>Transfer Flash USDT</h3>
+  <input type="text" id="recipient" placeholder="Recipient Address" />
+  <input type="number" id="amount" placeholder="Amount to Send" />
+  <button id="send">Send USDT</button>
+  <p id="txStatus"></p>
+
+  <script src="app.js"></script>
+</body>
+</html>
