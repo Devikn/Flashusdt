@@ -1,59 +1,84 @@
 const contractAddress = "0xD20Ecb072145678B5853B7563EE5dc0a6E6981d9";
 
 const usdtAbi = [
-  { constant: true, inputs: [{name:"_owner",type:"address"}], name:"balanceOf", outputs:[{name:"balance",type:"uint256"}], type:"function" },
-  { constant: true, inputs: [], name:"decimals", outputs:[{name:"",type:"uint8"}], type:"function" },
-  { constant: false, inputs:[{name:"_to",type:"address"},{name:"_value",type:"uint256"}], name:"transfer", outputs:[{name:"success",type:"bool"}], type:"function" }
+  "function balanceOf(address owner) view returns (uint256)",
+  "function decimals() view returns (uint8)",
+  "function transfer(address to, uint amount) returns (bool)"
 ];
 
-let web3, userAddress;
+let provider;
+let signer;
+let userAddress;
 
 async function connectWallet() {
-  if (!window.ethereum) return alert("Install MetaMask.");
+  if (!window.ethereum) {
+    alert("MetaMask is required. Please install it.");
+    return;
+  }
+
   try {
     await window.ethereum.request({ method: "eth_requestAccounts" });
-    web3 = new Web3(window.ethereum);
-    const accounts = await web3.eth.getAccounts();
-    userAddress = accounts[0];
+
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    signer = provider.getSigner();
+    userAddress = await signer.getAddress();
+
     document.getElementById("wallet").innerText = Wallet: ${userAddress};
     await updateBalance();
-  } catch(e) {
-    console.error(e);
-    alert("Failed to connect MetaMask.");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to connect wallet.");
   }
 }
 
 async function updateBalance() {
-  const c = new web3.eth.Contract(usdtAbi, contractAddress);
   try {
-    const raw = await c.methods.balanceOf(userAddress).call();
-    const d = await c.methods.decimals().call();
-    const bal = raw / (10 ** d);
-    document.getElementById("balance").innerText = USDT Balance: ${bal};
-  } catch(e) {
-    console.error(e);
-    document.getElementById("balance").innerText = "Balance: error";
+    const contract = new ethers.Contract(contractAddress, usdtAbi, provider);
+    const rawBalance = await contract.balanceOf(userAddress);
+    const decimals = await contract.decimals();
+
+    const adjustedBalance = Number(ethers.utils.formatUnits(rawBalance, decimals));
+    document.getElementById("balance").innerText = USDT Balance: ${adjustedBalance};
+  } catch (err) {
+    console.error(err);
+    document.getElementById("balance").innerText = "USDT Balance: Error";
   }
 }
 
 async function sendUSDT() {
-  const to = document.getElementById("recipient").value.trim();
-  const amt = parseFloat(document.getElementById("amount").value);
-  if (!web3 || !userAddress) return alert("Connect first.");
-  if (!web3.utils.isAddress(to)) return alert("Invalid address.");
-  if (isNaN(amt) || amt <= 0) return alert("Invalid amount.");
+  const recipient = document.getElementById("recipient").value.trim();
+  const amount = document.getElementById("amount").value;
 
-  const c = new web3.eth.Contract(usdtAbi, contractAddress);
+  if (!provider || !signer || !userAddress) {
+    alert("Please connect your wallet first.");
+    return;
+  }
+  if (!ethers.utils.isAddress(recipient)) {
+    alert("Invalid recipient address.");
+    return;
+  }
+  if (isNaN(amount) || Number(amount) <= 0) {
+    alert("Enter a valid amount.");
+    return;
+  }
+
   try {
-    const d = await c.methods.decimals().call();
-    const val = web3.utils.toBN(amt * (10 ** d));
-    document.getElementById("txStatus").innerText = "Sending...";
-    const tx = await c.methods.transfer(to, val.toString()).send({ from: userAddress });
-    document.getElementById("txStatus").innerText = Sent! TxHash: ${tx.transactionHash};
+    const contract = new ethers.Contract(contractAddress, usdtAbi, signer);
+    const decimals = await contract.decimals();
+
+    const amountParsed = ethers.utils.parseUnits(amount, decimals);
+
+    document.getElementById("txStatus").innerText = "Sending transaction...";
+
+    const tx = await contract.transfer(recipient, amountParsed);
+    await tx.wait();
+
+    document.getElementById("txStatus").innerText = Transaction successful! TxHash: ${tx.hash};
+
     await updateBalance();
-  } catch(e) {
-    console.error(e);
-    document.getElementById("txStatus").innerText = "Failed to send.";
+  } catch (err) {
+    console.error(err);
+    document.getElementById("txStatus").innerText = "Transaction failed.";
   }
 }
 
