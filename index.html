@@ -2,17 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flash USDT dApp</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flash USDT dApp (Ethers.js)</title>
   <link rel="icon" href="favicon.ico" />
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 2rem; }
-    input, button { padding: 10px; margin: 5px 0; font-size: 1rem; width: 100%; }
+    body { font-family: Arial, sans-serif; padding: 2rem; max-width: 400px; margin: auto; }
+    input, button { padding: 10px; margin: 10px 0; width: 100%; font-size: 1rem; }
   </style>
 </head>
 <body>
-  <h1>Flash USDT dApp</h1>
+  <h1>Flash USDT dApp (Ethers.js)</h1>
 
   <button id="connect">Connect Wallet</button>
   <p id="wallet">Wallet: Not connected</p>
@@ -24,6 +23,7 @@
   <button id="send">Send USDT</button>
   <p id="txStatus"></p>
 
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
